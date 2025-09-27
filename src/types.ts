@@ -1,6 +1,8 @@
-export interface Template {
-  name: string;
-  specs: Spec[];
+import { number } from "zod";
+import { Template } from "./generated/prisma";
+
+export interface TemplateWithSpecCount extends Template {
+  specCount: number;
 }
 
 export interface Spec {

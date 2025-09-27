@@ -18,6 +18,8 @@ datasource db {
 model Template{
   id Int @id @default(autoincrement())
   name String
+  description String
+  createdAt DateTime @default(now())
   specs Spec[]
   audit Audit[]
 }
@@ -62,6 +64,11 @@ model Proof {
   auditSpec AuditSpec @relation(fields: [auditSpecId], references: [id])
   auditSpecId Int @unique
 }
+
+// model SensitiveDocuments {
+//   id        Int       @id @default(autoincrement())
+//   type
+// }
 
 
 enum ProofType {

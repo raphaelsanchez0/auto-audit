@@ -10,6 +10,9 @@ export const specSchema = z.object({
 
 export const templateSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  description: z
+    .string()
+    .min(10, { message: "Description must be at least 10 characters." }),
   specs: z
     .array(specSchema)
     .min(1, { message: "At least one spec is required." }),
