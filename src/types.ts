@@ -7,6 +7,9 @@ export interface Spec {
   name: string;
   description: string;
   maxRating: number;
+}
+
+export interface Audit extends Spec {
   evaluatedRating: number;
   context?: string;
   proof: Proof;
