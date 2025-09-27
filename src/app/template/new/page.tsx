@@ -47,7 +47,7 @@ export default function NewTemplateForm() {
 
   const createTemplateMutation = useMutation({
     mutationFn: async (data: z.infer<typeof templateSchema>) => {
-      const res = await fetch("/api/templates/new", {
+      const res = await fetch("/api/template/new", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -117,6 +117,35 @@ export default function NewTemplateForm() {
                           />
                         </FormControl>
                         <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`specs.${index}.maxRating`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Max Rating</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="1"
+                            {...field}
+                            value={field.value ?? ""} // handle undefined
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value === ""
+                                  ? undefined
+                                  : +e.target.value
+                              )
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+
+                        <FormDescription>
+                          The maximum rating for this control
+                        </FormDescription>
                       </FormItem>
                     )}
                   />

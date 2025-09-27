@@ -7,7 +7,7 @@ export async function POST(request: NextResponse) {
   try {
     const json = await request.json();
     const body = templateSchema.parse(json);
-
+    console.log(body);
     const newTemplateEntity = await prisma.template.create({
       data: {
         name: body.name,
