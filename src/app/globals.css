@@ -120,3 +120,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.page {
+  @apply w-8/12 mx-auto my-10;
+}
