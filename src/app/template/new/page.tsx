@@ -24,6 +24,10 @@ import { Input } from "@/components/ui/input";
 import { Prisma, Template } from "@/src/generated/prisma";
 import { templateSchema } from "@/src/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { PrismaClient } from "@/src/generated/prisma";
+
+const prisma = new PrismaClient();
 
 export default function NewTemplateForm() {
   const form = useForm<z.infer<typeof templateSchema>>({
@@ -47,7 +51,7 @@ export default function NewTemplateForm() {
 
   const createTemplateMutation = useMutation({
     mutationFn: async (data: z.infer<typeof templateSchema>) => {
-      const res = await fetch("/api/templates/new", {
+      const res = await fetch("/api/template/new", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -61,8 +65,11 @@ export default function NewTemplateForm() {
     },
   });
 
+  const router = useRouter();
+
   function onSubmit(data: z.infer<typeof templateSchema>) {
     createTemplateMutation.mutate(data);
+    router.push("/template");
   }
   return (
     <div className="page">
@@ -72,7 +79,7 @@ export default function NewTemplateForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -89,6 +96,26 @@ export default function NewTemplateForm() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="NIST 800-171 description"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Description of your compliance document
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="text-lg font-medium">Specs</div>
               {fields.map((field, index) => (
                 <div key={field.id} className="border p-4 rounded-md space-y-4">
                   <FormField
@@ -117,6 +144,35 @@ export default function NewTemplateForm() {
                           />
                         </FormControl>
                         <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`specs.${index}.maxRating`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Max Rating</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="1"
+                            {...field}
+                            value={field.value ?? ""} // handle undefined
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value === ""
+                                  ? undefined
+                                  : +e.target.value
+                              )
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+
+                        <FormDescription>
+                          The maximum rating for this control
+                        </FormDescription>
                       </FormItem>
                     )}
                   />
