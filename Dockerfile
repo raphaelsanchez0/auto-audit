@@ -1,11 +1,17 @@
-# Use a slim Python image
+# 1️⃣ Base image
 FROM python:3.11-slim
 
-# Set environment variables for Python
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+# 2️⃣ Set working directory inside the container
+WORKDIR /app
 
-# Install system dependencies
+# 3️⃣ Copy your code
+COPY src/ /app/src/
+
+# 4️⃣ Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 5️⃣ Install system packages needed for OCR
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     libgl1 \
@@ -14,19 +20,11 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Set work directory
-WORKDIR /app
+# Install python-multipart separately
+RUN pip install python-multipart
 
-# Copy requirements and install
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# 6️⃣ Expose FastAPI port
+EXPOSE 8000
 
-# Copy source code
-COPY . .
-
-# Expose environment variables from .env file at runtime
-# (Alternatively use --env-file when running)
-# ENV $(cat .env | xargs)
-
-# Default command
-CMD ["python3", "ocr_text.py"]
+# 7️⃣ Run FastAPI - Fix the path to match your file structure
+CMD ["uvicorn", "src.app.python.fastAPI_redactor:app", "--host", "0.0.0.0", "--port", "8000"]
