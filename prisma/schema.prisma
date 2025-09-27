@@ -17,4 +17,55 @@ datasource db {
 
 model Template{
   id Int @id @default(autoincrement())
+  name String
+  specs Spec[]
+  audit Audit[]
+}
+
+model Spec {
+  id          Int      @id @default(autoincrement())
+  template    Template @relation(fields: [templateId], references: [id])
+  templateId  Int
+  name        String
+  description String
+  maxRating   Int
+
+  auditSpecs  AuditSpec[]
+}
+
+model Audit {
+  id         Int         @id @default(autoincrement())
+  template   Template    @relation(fields: [templateId], references: [id])
+  templateId Int
+  createdAt  DateTime    @default(now())
+  auditSpecs      AuditSpec[] // completed answers per spec
+}
+model AuditSpec {
+  id              Int      @id @default(autoincrement())
+  audit           Audit    @relation(fields: [auditId], references: [id])
+  auditId         Int
+  spec            Spec     @relation(fields: [specId], references: [id])
+  specId          Int
+
+  evaluatedRating Int
+  context         String?
+  proof           Proof?
+  feedback        String?
+}
+
+model Proof {
+  id        Int       @id @default(autoincrement())
+  type      ProofType
+  fileUrl   String?
+  content   String?
+
+  auditSpec AuditSpec @relation(fields: [auditSpecId], references: [id])
+  auditSpecId Int @unique
+}
+
+
+enum ProofType {
+  pdf
+  text
+  screenshot
 }
