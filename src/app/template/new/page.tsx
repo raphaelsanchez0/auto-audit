@@ -21,25 +21,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
-const specSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  description: z
-    .string()
-    .min(10, { message: "Description must be at least 10 characters." }),
-  maxRating: z.number().min(1, { message: "Max rating must be at least 1." }),
-});
-
-const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  specs: z
-    .array(specSchema)
-    .min(1, { message: "At least one spec is required." }),
-});
+import { Prisma, Template } from "@/src/generated/prisma";
+import { templateSchema } from "@/src/schemas";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function NewTemplateForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof templateSchema>>({
+    resolver: zodResolver(templateSchema),
     defaultValues: {
       name: "",
       specs: [],
@@ -55,8 +43,26 @@ export default function NewTemplateForm() {
     append({ name: "", description: "", maxRating: 1 });
   }
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    console.log(data);
+  const queryClient = useQueryClient();
+
+  const createTemplateMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof templateSchema>) => {
+      const res = await fetch("/api/templates/new", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create template");
+      return res.json();
+    },
+    onSuccess: () => {
+      // Refetch the "templates" list
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
+    },
+  });
+
+  function onSubmit(data: z.infer<typeof templateSchema>) {
+    createTemplateMutation.mutate(data);
   }
   return (
     <div className="page">
