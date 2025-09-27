@@ -17,3 +17,8 @@ export const templateSchema = z.object({
     .array(specSchema)
     .min(1, { message: "At least one spec is required." }),
 });
+
+// export const auditSpecForma = z.object({
+//   context: z.string().optional(),
+//   proof:
+// });
