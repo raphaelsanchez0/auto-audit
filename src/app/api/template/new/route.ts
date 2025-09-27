@@ -11,6 +11,7 @@ export async function POST(request: NextResponse) {
     const newTemplateEntity = await prisma.template.create({
       data: {
         name: body.name,
+        description: body.description,
         specs: {
           create: body.specs.map((s) => ({
             name: s.name,

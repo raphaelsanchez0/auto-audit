@@ -24,6 +24,10 @@ import { Input } from "@/components/ui/input";
 import { Prisma, Template } from "@/src/generated/prisma";
 import { templateSchema } from "@/src/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { PrismaClient } from "@/src/generated/prisma";
+
+const prisma = new PrismaClient();
 
 export default function NewTemplateForm() {
   const form = useForm<z.infer<typeof templateSchema>>({
@@ -61,8 +65,11 @@ export default function NewTemplateForm() {
     },
   });
 
+  const router = useRouter();
+
   function onSubmit(data: z.infer<typeof templateSchema>) {
     createTemplateMutation.mutate(data);
+    router.push("/template");
   }
   return (
     <div className="page">
@@ -72,7 +79,7 @@ export default function NewTemplateForm() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -89,6 +96,26 @@ export default function NewTemplateForm() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="NIST 800-171 description"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Description of your compliance document
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="text-lg font-medium">Specs</div>
               {fields.map((field, index) => (
                 <div key={field.id} className="border p-4 rounded-md space-y-4">
                   <FormField
