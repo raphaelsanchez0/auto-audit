@@ -6,11 +6,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
 import React from "react";
 
 export default function TemplatePage() {
   return (
-    <div className="w-8/12 mx-auto my-10">
+    <div className="page">
       <Card>
         <CardHeader>
           <CardTitle className="text-4xl font-bold tracking-tight text-center">
@@ -22,9 +23,11 @@ export default function TemplatePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center">
-          <Button className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
-            Create Template
-          </Button>
+          <Link href="/template/new">
+            <Button className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+              Create Template
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </div>
