@@ -17,5 +17,4 @@ datasource db {
 
 model Template{
   id Int @id @default(autoincrement())
-  
 }
