@@ -11,6 +11,7 @@ import {
 } from "../ui/card";
 import { Button } from "../ui/button";
 import { TemplateWithSpecCount } from "@/src/types";
+import Link from "next/link";
 
 interface ViewTemplateProps {
   template: TemplateWithSpecCount;
@@ -25,7 +26,9 @@ export default function ViewTemplate({ template }: ViewTemplateProps) {
         <CardDescription>{template.specCount} requirements</CardDescription>
       </CardHeader>
       <CardFooter className="mt-auto">
-        <Button className="w-full">Audit</Button>
+        <Button className="w-full">
+          <Link href={`/audit/${template.id}`}>View Audit</Link>
+        </Button>
       </CardFooter>
     </Card>
   );
