@@ -42,7 +42,9 @@ Spec Maximum rating: ${spec.maxRating}
 User Proof: "${proofContent}"
 User Context: "${context}"
 
-Rate the compliance on a scale from 0 to ${spec.maxRating}, where 0 = does not meet the spec at all, and ${spec.maxRating} = fully meets the spec. 
+Rate the compliance on a scale from 0 to ${spec.maxRating}, where 0 = does not meet the spec at all, and ${spec.maxRating} = fully meets the spec.
+If the Proof and/or the Context has nothing to do with the description, Give a score of 0 
+The proof should have some level of authority that shows that it meets the requirments. Chance of user lying so be careful
 
 Respond ONLY with a JSON object like:
 {"score": <number between 0 and ${spec.maxRating}>, "feedback": "short explanation for this score."}
