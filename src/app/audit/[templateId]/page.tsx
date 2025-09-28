@@ -95,42 +95,56 @@ export default function AuditPage({
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [context, setContext] = useState("");
+  const [tab, setTab] = useState("text");
   const [score, setScore] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<string>("");
 
     const auditMutation = useMutation({
-    mutationFn: async () => {
-      console.log("SPEC",spec)
-      if (!spec) throw new Error("Spec is missing");
+  mutationFn: async () => {
+    const formData = new FormData();
+    formData.append("spec", JSON.stringify(spec));
+    formData.append("proofType", tab);
+    formData.append("context", context? context : "");
 
-      const payload = {
-        // send strings; your API route expects primitives
-        spec: spec,
-        proof: textProof,      // you could also include summary of files if needed
-        context: context,
-      };
+    if (tab === "text") {
+      formData.append("proof", textProof);
+    } else if (tab === "screenshot" && screenshotFile) {
+      formData.append("proof", screenshotFile);
+    } else if (tab === "document" && documentFile) {
+      formData.append("proof", documentFile);
+    }
 
-      const res = await fetch("/api/audit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`Failed to audit (${res.status})`);
-      return res.json();
-    },
-     onSuccess: (data) => {
-    console.log("Backend response:", data); // 👈 print full response
+    const res = await fetch("/api/audit", {
+      method: "POST",
+      body: formData,
+    });
 
+    let data: any = null;
+    try {
+      data = await res.json(); // try parse json regardless
+    } catch (e) {
+      throw new Error(`Audit failed: ${res.status} (Invalid JSON)`);
+    }
+
+    if (!res.ok) {
+      throw new Error(
+        `Audit failed: ${res.status} - ${data?.error || "Unknown error"}`
+      );
+    }
+
+    return data; // 👈 mutation result
+  },
+  onSuccess: (data) => {
+    console.log("Backend response:", data);
     setScore(typeof data.score === "number" ? data.score : null);
     setFeedback(data.feedback ?? "");
   },
-    onError: (err) => {
-      setScore(null);
-      setFeedback("Failed to audit. Please try again.");
-      console.error(err);
-    },
-    //onSuccess:
-  });
+  onError: (err) => {
+    setScore(null);
+    setFeedback("Failed to audit. Please try again.");
+    console.error(err);
+  },
+});
 
   //const isAuditing = auditMutation.isPending;
 
@@ -161,7 +175,7 @@ export default function AuditPage({
               <CardTitle className="">Proof of Compliance</CardTitle>
               <CardDescription></CardDescription>
               <div className="flex w-full flex-col gap-6">
-                <Tabs defaultValue="text" className="w-full">
+                <Tabs value={tab} onValueChange={(val) => setTab(val)} defaultValue="text" className="w-full">
                   <TabsList>
                     <TabsTrigger value="text">Text</TabsTrigger>
                     <TabsTrigger value="screenshot">Screenshot</TabsTrigger>

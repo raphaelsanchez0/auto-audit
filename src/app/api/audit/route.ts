@@ -6,30 +6,46 @@ const OpenAI = require("openai");
 dotenv.config({ path: "../../../../.env" }); 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-export async function POST(req: NextRequest) {
-   const body: { spec: Spec; proof: string; context: string } = await req.json();
 
-  if (!body.spec || !body.proof || !body.context) {
-    return NextResponse.json(
-      { error: "Missing required fields" },
-      { status: 400 }
-    );
-  }
+export async function POST(req: NextRequest) {
+    const formData = await req.formData();
+
+  const spec = JSON.parse(formData.get("spec") as string) as Spec;
+  const proofType = formData.get("proofType") as string;
+  const context = formData.get("context") as string | null;
+  const proof = formData.get("proof"); // could be string or File
+
+    let proofContent = "";
+    let fileUrl: string | null = null;
+
+    if (proofType === "text") {
+      proofContent = formData.get("proof") as string;
+    } else {
+      const file = formData.get("proof") as File;
+      if (file) {
+        // TODO: database suff
+        fileUrl = `https://fake-storage/${file.name}`;
+        proofContent = `User uploaded a ${proofType} file: ${fileUrl}`;
+      }
+    }
+
+    if (!spec || !proofType || (!proofContent && !fileUrl)) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
 
   const prompt = `
 You are a compliance auditor. Rate how well the proof and context meet the specification.
 
-Specification Info":
-Spec Name: ${body.spec.name}
-Spec Descripton: ${body.spec.description}
-Spec Maximum rating :  ${body.spec.maxRating}
-User Proof: "${body.proof}"
-User Context: "${body.context}"
+Spec Name: ${spec.name}
+Spec Description: ${spec.description}
+Spec Maximum rating: ${spec.maxRating}
+User Proof: "${proofContent}"
+User Context: "${context}"
 
-Rate the compliance on a scale from 0 to ${body.spec.maxRating}, where 0 = does not meet the spec at all, and ${body.spec.maxRating} = fully meets the spec. 
+Rate the compliance on a scale from 0 to ${spec.maxRating}, where 0 = does not meet the spec at all, and ${spec.maxRating} = fully meets the spec. 
 
 Respond ONLY with a JSON object like:
-{"score": <number between 0 and ${body.spec.maxRating}>, "feedback": "short explanation for this score."}
+{"score": <number between 0 and ${spec.maxRating}>, "feedback": "short explanation for this score."}
 `;
 
   try {
