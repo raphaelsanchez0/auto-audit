@@ -110,6 +110,7 @@ export default function AuditPage({
         spec: spec,
         proof: textProof, // you could also include summary of files if needed
         context: context,
+        auditId: audit?.id,
       };
 
       const res = await fetch("/api/audit", {
@@ -123,7 +124,9 @@ export default function AuditPage({
     onSuccess: (data) => {
       console.log("Backend response:", data); // 👈 print full response
 
-      setScore(typeof data.score === "number" ? data.score : null);
+      setScore(
+        typeof data.evaluatedRating === "number" ? data.evaluatedRating : null
+      );
       setFeedback(data.feedback ?? "");
     },
     onError: (err) => {
@@ -133,10 +136,6 @@ export default function AuditPage({
     },
     //onSuccess:
   });
-
-  //const isAuditing = auditMutation.isPending;
-
-  console.log(documentFile);
 
   return (
     <div className="w-full flex">

@@ -8,7 +8,8 @@ dotenv.config({ path: "../../../../.env" });
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: NextRequest) {
-  const body: { spec: Spec; proof: string; context: string } = await req.json();
+  const body: { spec: Spec; proof: string; context: string; auditId: number } =
+    await req.json();
 
   if (!body.spec || !body.proof || !body.context) {
     return NextResponse.json(
@@ -20,10 +21,10 @@ export async function POST(req: NextRequest) {
   const prompt = `
 You are a compliance auditor. Rate how well the proof and context meet the specification.
 
-Specification Info":
+Specification Info:
 Spec Name: ${body.spec.name}
-Spec Descripton: ${body.spec.description}
-Spec Maximum rating :  ${body.spec.maxRating}
+Spec Description: ${body.spec.description}
+Spec Maximum rating: ${body.spec.maxRating}
 User Proof: "${body.proof}"
 User Context: "${body.context}"
 
@@ -38,20 +39,31 @@ Respond ONLY with a JSON object like:
       model: "gpt-5-nano",
       messages: [{ role: "user", content: prompt }],
     });
-    console.log(completion);
 
     const rawResponse = completion.choices[0].message?.content;
 
     let data = { score: -1, feedback: "Could not parse response" };
     try {
-      data = JSON.parse(rawResponse!);
+      if (rawResponse) {
+        data = JSON.parse(rawResponse);
+      }
     } catch (err) {
       console.error("GPT JSON parse error:", rawResponse);
     }
 
-    //const newAuditSpecEntity = prisma.auditSpec.create({});
+    // ✅ Save to DB and await
+    const newAuditSpecEntity = await prisma.auditSpec.create({
+      data: {
+        auditId: body.auditId,
+        specId: body.spec.id,
+        evaluatedRating: data.score,
+        context: body.context,
+        feedback: data.feedback,
+      },
+    });
 
-    return NextResponse.json(data);
+    // ✅ Return the DB entity (contains id, auditId, specId, etc.)
+    return NextResponse.json(newAuditSpecEntity);
   } catch (err) {
     console.error("OpenAI API error:", err);
     return NextResponse.json({ error: "OpenAI API error" }, { status: 500 });
