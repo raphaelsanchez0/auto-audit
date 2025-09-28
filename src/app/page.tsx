@@ -64,20 +64,6 @@ export default function Home() {
   return (
     <main className="relative w-full overflow-hidden bg-rose-50 text-black">
       <InteractiveGradientBackground />
-
-      {/* 🔴 Top Banner */}
-      <div className="top-0 left-0 w-full z-50 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between text-white text-sm md:text-base">
-          <span className="font-medium">🚀 New Release: Auto Audit Beta is Live!</span>
-          <Link
-            href="/template"
-            className="underline underline-offset-2 font-semibold hover:text-rose-100 transition-colors"
-          >
-            Try it now →
-          </Link>
-        </div>
-      </div>
-
       {/* HERO */}
       <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 z-10 pt-16 overflow-hidden">
         <div className="absolute inset-0 w-full h-full z-0">
