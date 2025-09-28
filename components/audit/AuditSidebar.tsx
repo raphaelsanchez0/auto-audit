@@ -22,8 +22,16 @@ interface AuditSidebarProps {
 export default function AuditSidebar({ templateId, specs }: AuditSidebarProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const firstId = specs.length > 0 ? specs[0].id : null;
+  const lastId = specs.length > 0 ? specs[specs.length - 1].id : null;
+
   function handleSpecSelection(specId: number) {
     const params = new URLSearchParams(searchParams.toString());
+
+    if (firstId !== null) params.set("firstId", firstId.toString());
+    if (lastId !== null) params.set("lastId", lastId.toString());
+
     params.set("spec", specId.toString());
     const queryString = params.toString();
     const newUrl = `/audit/${templateId}?${queryString}`;
