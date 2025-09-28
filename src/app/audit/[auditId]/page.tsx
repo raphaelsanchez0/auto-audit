@@ -22,10 +22,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Spec, Template } from "@/src/generated/prisma";
+import { Audit, Spec, Template } from "@/src/generated/prisma";
 import { auditSchema } from "@/src/schemas";
-import { TemplateWithSpecs } from "@/src/types";
-import { getSpec, getTemplate } from "@/src/utils/api";
+import { AuditEntityComplete, TemplateWithSpecs } from "@/src/types";
+import { getAudit, getSpec, getTemplate } from "@/src/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -37,9 +37,9 @@ import z from "zod";
 export default function AuditPage({
   params,
 }: {
-  params: Promise<{ templateId: string }>;
+  params: Promise<{ auditId: string }>;
 }) {
-  const { templateId } = use(params);
+  const { auditId } = use(params);
   const searchParams = useSearchParams();
   const router = useRouter();
   const specId = searchParams.get("spec");
@@ -49,13 +49,15 @@ export default function AuditPage({
   const isOnFirst = specId === firstSpecId;
   const isOnLast = specId === lastSpecId;
   const {
-    data: template,
+    data: audit,
     isLoading,
     isError,
-  } = useQuery<TemplateWithSpecs>({
-    queryKey: ["templates", templateId],
-    queryFn: () => getTemplate(parseInt(templateId)),
+  } = useQuery<AuditEntityComplete>({
+    queryKey: ["audit", auditId],
+    queryFn: () => getAudit(parseInt(auditId)),
   });
+
+  console.log("AUDIT", audit);
 
   const {
     data: spec,
@@ -75,7 +77,7 @@ export default function AuditPage({
     if (firstSpecId && newSpecId >= parseInt(firstSpecId)) {
       const params = new URLSearchParams(searchParams.toString());
       params.set("spec", newSpecId.toString());
-      router.push(`/audit/${templateId}?${params.toString()}`);
+      router.push(`/audit/${auditId}?${params.toString()}`);
     }
   }
 
@@ -87,7 +89,7 @@ export default function AuditPage({
     if (lastSpecId && newSpecId <= parseInt(lastSpecId)) {
       const params = new URLSearchParams(searchParams.toString());
       params.set("spec", newSpecId.toString());
-      router.push(`/audit/${templateId}?${params.toString()}`);
+      router.push(`/audit/${auditId}?${params.toString()}`);
     }
   }
 
@@ -98,15 +100,15 @@ export default function AuditPage({
   const [score, setScore] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<string>("");
 
-    const auditMutation = useMutation({
+  const auditMutation = useMutation({
     mutationFn: async () => {
-      console.log("SPEC",spec)
+      console.log("SPEC", spec);
       if (!spec) throw new Error("Spec is missing");
 
       const payload = {
         // send strings; your API route expects primitives
         spec: spec,
-        proof: textProof,      // you could also include summary of files if needed
+        proof: textProof, // you could also include summary of files if needed
         context: context,
       };
 
@@ -118,12 +120,12 @@ export default function AuditPage({
       if (!res.ok) throw new Error(`Failed to audit (${res.status})`);
       return res.json();
     },
-     onSuccess: (data) => {
-    console.log("Backend response:", data); // 👈 print full response
+    onSuccess: (data) => {
+      console.log("Backend response:", data); // 👈 print full response
 
-    setScore(typeof data.score === "number" ? data.score : null);
-    setFeedback(data.feedback ?? "");
-  },
+      setScore(typeof data.score === "number" ? data.score : null);
+      setFeedback(data.feedback ?? "");
+    },
     onError: (err) => {
       setScore(null);
       setFeedback("Failed to audit. Please try again.");
@@ -136,13 +138,14 @@ export default function AuditPage({
 
   console.log(documentFile);
 
-  
-
   return (
     <div className="w-full flex">
       <div className="w-3/12 border-r">
-        {template?.specs ? (
-          <AuditSidebar templateId={templateId} specs={template?.specs} />
+        {audit?.template.specs ? (
+          <AuditSidebar
+            templateId={audit.template.id!}
+            specs={audit.template?.specs}
+          />
         ) : (
           <Skeleton className="h-10" />
         )}
@@ -168,9 +171,12 @@ export default function AuditPage({
                     <TabsTrigger value="document">Document</TabsTrigger>
                   </TabsList>
                   <TabsContent value="text">
-                    <Textarea 
-                    value={textProof}
-                    onChange={(e)=>{setTextProof(e.target.value)}}/>
+                    <Textarea
+                      value={textProof}
+                      onChange={(e) => {
+                        setTextProof(e.target.value);
+                      }}
+                    />
                   </TabsContent>
                   <TabsContent value="screenshot">
                     <input

@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Spec } from "@/src/generated/prisma";
+import { prisma } from "@/src/utils/prisma";
 const dotenv = require("dotenv");
 const OpenAI = require("openai");
 
-dotenv.config({ path: "../../../../.env" }); 
+dotenv.config({ path: "../../../../.env" });
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: NextRequest) {
-   const body: { spec: Spec; proof: string; context: string } = await req.json();
+  const body: { spec: Spec; proof: string; context: string } = await req.json();
 
   if (!body.spec || !body.proof || !body.context) {
     return NextResponse.json(
@@ -37,7 +38,7 @@ Respond ONLY with a JSON object like:
       model: "gpt-5-nano",
       messages: [{ role: "user", content: prompt }],
     });
-    console.log(completion)
+    console.log(completion);
 
     const rawResponse = completion.choices[0].message?.content;
 
@@ -47,6 +48,8 @@ Respond ONLY with a JSON object like:
     } catch (err) {
       console.error("GPT JSON parse error:", rawResponse);
     }
+
+    //const newAuditSpecEntity = prisma.auditSpec.create({});
 
     return NextResponse.json(data);
   } catch (err) {

@@ -16,7 +16,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Spec } from "@/src/generated/prisma";
 
 interface AuditSidebarProps {
-  templateId: string;
+  templateId: number;
   specs: Spec[];
 }
 export default function AuditSidebar({ templateId, specs }: AuditSidebarProps) {
