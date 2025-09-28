@@ -14,6 +14,7 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null)
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([])
 
+  // Scroll progress & active section
   useEffect(() => {
     const onScroll = () => {
       const container = containerRef.current
@@ -21,7 +22,6 @@ export default function Home() {
 
       const rect = container.getBoundingClientRect()
       const winH = window.innerHeight
-
       const distance = winH - rect.top
       const maxDistance = rect.height * 1.5
       const clamped = Math.min(Math.max(distance, 0), maxDistance)
@@ -46,18 +46,18 @@ export default function Home() {
   const sections = [
     {
       title: "What is Auto Audit?",
-      text: "Auto Audit streamlines the auditing process by automatically redacting sensitive information from PDFs. Faster, safer, smarter.",
-      image: "/Templates.png",
+      text: "Auto Audit streamlines the auditing process by leveraging AI to automatically grade your standards against industry compliance.",
+      image: "/compliance.jpeg",
     },
     {
-      title: "How to Use",
-      text: "1. Upload your PDF. 2. Select fields to redact. 3. Download your secure document. It's that simple.",
-      image: "/images/audit2.svg",
+      title: "PII Redaction Tool",
+      text: "1. Upload your PDF 2. Run the redaction system 3.Download redacted PDF!",
+      image: "/redaction.jpg",
     },
     {
       title: "Why it Matters",
-      text: "Protecting sensitive information is critical. Auto Audit empowers individuals and organizations to maintain privacy effortlessly.",
-      image: "/images/audit3.svg",
+      text: "Save on thousands of man hours at half the cost. Leverage AI to pass your companies standards faster than ever.",
+      image: "/speed.jpg",
     },
   ]
 
@@ -109,10 +109,11 @@ export default function Home() {
       </section>
 
       {/* TIMELINE */}
-      <div ref={containerRef} className="relative z-0">
-        <div className="absolute left-1/2 -translate-x-1/2 top-[-10vh] w-[4px] bg-rose-200/70 h-[140%] z-0">
+      <div ref={containerRef} className="relative">
+        {/* Timeline Vertical Line */}
+        <div className="absolute left-1/2 -translate-x-1/2 top-0 w-1 bg-rose-200/70 h-full z-0" aria-hidden="true">
           <div
-            className="absolute left-0 top-0 w-full bg-gradient-to-b from-rose-400 to-rose-600 transition-[height] duration-200"
+            className="absolute left-0 top-0 w-full bg-gradient-to-b from-rose-400 to-rose-600 transition-all duration-300 ease-out"
             style={{ height: `${progress * 100}%` }}
           />
         </div>
@@ -134,7 +135,7 @@ export default function Home() {
       {/* CALL TO ACTION */}
       <section className="relative py-28 bg-gradient-to-b from-rose-100 via-rose-200 to-rose-300 text-center">
         <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-rose-700 mb-6">Ready to Protect Your Data?</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-rose-700 mb-6">Ready to get started?</h2>
           <p className="text-lg text-gray-700 mb-10">Start auditing your documents today—simple, fast, and secure.</p>
           <Link href="/template">
             <Button className="bg-rose-600 hover:bg-rose-700 text-white text-lg px-10 py-5 rounded-full shadow-md hover:shadow-[0_0_25px_#f87171]/60 transition-all duration-300 hover:scale-105">
@@ -167,15 +168,21 @@ function TimelineItem({
   const isActive = index <= activeIndex
 
   return (
-    <section ref={setRef} className="relative w-full py-28 px-6 bg-white/90 border-t border-rose-200">
+    <section
+      ref={setRef}
+      className="relative w-full py-28 px-6 bg-white/90 border-t border-rose-200"
+    >
+      {/* Timeline Dot: behind sliding boxes */}
       <div
-        className={`absolute left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-white/80 z-10 
+        className={`absolute left-1/2 -translate-x-1/2 w-6 h-6 rounded-full border-4 border-white/80 
           transition-all duration-300 ${isActive ? "bg-rose-500 shadow-[0_0_20px_#f87171]" : "bg-rose-200/80"}`}
-        style={{ top: "50%" }}
+        style={{ top: "50%", zIndex: 0 }}
       />
+
+      {/* Sliding boxes and content */}
       <SlideSection direction={direction}>
         <div
-          className={`relative z-20 max-w-7xl mx-auto flex flex-col items-center gap-12 ${
+          className={`relative z-10 max-w-7xl mx-auto flex flex-col items-center gap-12 ${
             direction === "right" ? "md:flex-row-reverse" : "md:flex-row"
           }`}
         >

@@ -13,8 +13,11 @@ export function Navbar() {
   ]
 
   return (
-    <nav className="flex items-center justify-between px-6 py-3 shadow-md bg-background border-b">
-      <Link href="/" className="text-xl text-neutral-800 font-bold hover:text-primary transition-colors">
+    <nav className="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-3 shadow-md bg-white border-b">
+      <Link
+        href="/"
+        className="text-xl text-neutral-800 font-bold hover:text-rose-600 transition-colors"
+      >
         Auto Audit
       </Link>
       <div className="flex gap-6">
@@ -23,8 +26,8 @@ export function Navbar() {
             key={href}
             href={href}
             className={cn(
-              "text-sm font-medium transition-colors hover:text-primary",
-              pathname === href ? "text-primary" : "text-muted-foreground"
+              "text-sm font-medium transition-colors hover:text-rose-600",
+              pathname === href ? "text-rose-600" : "text-gray-500"
             )}
           >
             {label}
