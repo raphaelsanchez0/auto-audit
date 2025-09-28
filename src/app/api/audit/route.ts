@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
+import { Spec } from "@/src/generated/prisma";
+const dotenv = require("dotenv");
+const OpenAI = require("openai");
 
+dotenv.config({ path: "../../../../.env" }); 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: NextRequest) {
-  const { spec, proof, context, maxScore } = await req.json();
+   const body: { spec: Spec; proof: string; context: string } = await req.json();
 
-  console.log(spec, proof, context, maxScore);
-  if (!spec || !proof || !context || !maxScore) {
+  if (!body.spec || !body.proof || !body.context) {
     return NextResponse.json(
       { error: "Missing required fields" },
       { status: 400 }
@@ -17,14 +19,17 @@ export async function POST(req: NextRequest) {
   const prompt = `
 You are a compliance auditor. Rate how well the proof and context meet the specification.
 
-Specification: "${spec}"
-User Proof: "${proof}"
-User Context: "${context}"
+Specification Info":
+Spec Name: ${body.spec.name}
+Spec Descripton: ${body.spec.description}
+Spec Maximum rating :  ${body.spec.maxRating}
+User Proof: "${body.proof}"
+User Context: "${body.context}"
 
-Rate the compliance on a scale from 0 to ${maxScore}, where 0 = does not meet the spec at all, and ${maxScore} = fully meets the spec. 
+Rate the compliance on a scale from 0 to ${body.spec.maxRating}, where 0 = does not meet the spec at all, and ${body.spec.maxRating} = fully meets the spec. 
 
 Respond ONLY with a JSON object like:
-{"score": <number between 0 and ${maxScore}>, "feedback": "short explanation for this score."}
+{"score": <number between 0 and ${body.spec.maxRating}>, "feedback": "short explanation for this score."}
 `;
 
   try {
@@ -32,6 +37,7 @@ Respond ONLY with a JSON object like:
       model: "gpt-5-nano",
       messages: [{ role: "user", content: prompt }],
     });
+    console.log(completion)
 
     const rawResponse = completion.choices[0].message?.content;
 
