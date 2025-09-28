@@ -1,11 +1,13 @@
 import { PrismaClient } from "@/src/generated/prisma";
 import { NextResponse } from "next/server";
 import { prisma } from "@/src/utils/prisma";
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const id = parseInt(searchParams.get("id") || "");
 
+export async function GET(
+  _req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const id = parseInt(params.id);
     if (isNaN(id)) {
       return NextResponse.json(
         { error: "Missing or invalid template id" },
@@ -20,6 +22,7 @@ export async function GET(req: Request) {
       },
     });
 
+    console.log("SPECS:", template?.specs);
     if (!template) {
       return NextResponse.json(
         { error: "Template not found" },

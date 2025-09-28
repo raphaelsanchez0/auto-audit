@@ -18,7 +18,22 @@ export const templateSchema = z.object({
     .min(1, { message: "At least one spec is required." }),
 });
 
-// export const auditSpecForma = z.object({
-//   context: z.string().optional(),
-//   proof:
-// });
+export const proofSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("text"),
+    content: z.string().min(1, "Enter some text"),
+  }),
+  z.object({
+    type: z.literal("screenshot"),
+    file: z.instanceof(File, { message: "Upload an image" }),
+  }),
+  z.object({
+    type: z.literal("document"),
+    file: z.instanceof(File, { message: "Upload a PDF" }),
+  }),
+]);
+
+export const auditSchema = z.object({
+  context: z.string().optional(),
+  proof: proofSchema,
+});

@@ -1,4 +1,5 @@
 "use client";
+import AuditSidebar from "@/components/audit/AuditSidebar";
 import {
   Card,
   CardContent,
@@ -8,11 +9,15 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { getTemplate } from "@/src/utils/api";
+import { Spec, Template } from "@/src/generated/prisma";
+import { TemplateWithSpecs } from "@/src/types";
+import { getSpec, getTemplate } from "@/src/utils/api";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import React, { use } from "react";
 
@@ -22,32 +27,50 @@ export default function AuditPage({
   params: Promise<{ templateId: string }>;
 }) {
   const { templateId } = use(params);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const specId = searchParams.get("spec");
 
-  const { data, isLoading, isError } = useQuery({
+  const {
+    data: template,
+    isLoading,
+    isError,
+  } = useQuery<TemplateWithSpecs>({
     queryKey: ["templates", templateId],
     queryFn: () => getTemplate(parseInt(templateId)),
   });
 
-  console.log("data", data);
+  const {
+    data: spec,
+    isLoading: specLoading,
+    isError: specError,
+  } = useQuery<Spec>({
+    queryKey: ["spec", specId],
+    queryFn: () => getSpec(parseInt(specId!!)),
+    enabled: !!specId,
+  });
 
   return (
     <div className="w-full flex">
-      <div className="bg-red-600 w-3/12">tst</div>
+      <div className="w-3/12 border-r">
+        {template?.specs ? (
+          <AuditSidebar templateId={templateId} specs={template?.specs} />
+        ) : (
+          <Skeleton className="h-10" />
+        )}
+      </div>
       <div className="w-9/12">
         <Card className="m-4">
           <CardHeader>
-            <CardTitle className="text-xl">Requirement {templateId}</CardTitle>
-            <CardDescription>Description of the requirement</CardDescription>
+            <CardTitle className="text-xl">Requirement {spec?.name}</CardTitle>
+            <CardDescription>{spec?.description}</CardDescription>
           </CardHeader>
           <div className="w-full px-6">
             <Separator />
           </div>
           <CardContent className="space-y-2">
             <CardTitle className="">Proof of Compliance</CardTitle>
-            <CardDescription>
-              Evidence that the requirement has been met. You can submit text, a
-              screenshot, or a PDF document.
-            </CardDescription>
+            <CardDescription></CardDescription>
             <div className="flex w-full flex-col gap-6">
               <Tabs defaultValue="text" className="w-full">
                 <TabsList>
