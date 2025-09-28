@@ -30,7 +30,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import React, { use, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
@@ -137,6 +137,26 @@ export default function AuditPage({
     //onSuccess:
   });
 
+  useEffect(() => {
+    if (!audit || !specId) return;
+
+    const existing = audit.auditSpecs?.find(
+      (as) => as.specId === parseInt(specId)
+    );
+
+    if (existing) {
+      setScore(existing.evaluatedRating ?? null);
+      setFeedback(existing.feedback ?? "");
+      setContext(existing.context ?? "");
+    } else {
+      // reset if no auditSpec found
+      setScore(null);
+      setFeedback("");
+      setContext("");
+    }
+  }, [audit, specId]);
+
+  console.log(audit);
   return (
     <div className="w-full flex">
       <div className="w-3/12 border-r">
