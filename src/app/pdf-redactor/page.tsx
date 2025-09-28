@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/ui/navbar";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function PdfRedactorPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -11,7 +11,6 @@ export default function PdfRedactorPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
 
-  // Clean up blob URL when replaced/unmounted
   useEffect(() => {
     return () => {
       if (downloadUrl) URL.revokeObjectURL(downloadUrl);
@@ -49,20 +48,18 @@ export default function PdfRedactorPage() {
   };
 
   return (
-    <div className="h-screen w-screen min-h-screen flex flex-col bg-neutral-100 text-white overflow-hidden">
-      <div className="page">
-        <Navbar />
-        <main className="p-6 pb-20 ">
-          <h2 className="text-2xl font-semibold"></h2>
-        </main>
-      </div>
+    <div className="relative h-screen w-screen flex flex-col bg-white text-black">
+      <Navbar />
 
-      <main className="min-h-screen flex flex-col items-center justify-top">
-        <div className="bg-white/10 p-8 rounded-xl shadow-lg max-w-md w-full text-center">
-          <h1 className="text-3xl font-bold mb-6 text-neutral-800">PDF Redactor</h1>
+      <main className="flex flex-1 items-center justify-center px-6">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-gray-200 hover:shadow-[0_0_30px_rgba(248,113,113,0.3)] transition-all">
+          <h1 className="text-3xl font-bold mb-2 text-rose-600">PDF Redactor</h1>
+
+          <p className="text-gray-700 mb-6">
+            Upload your PDF and automatically redact sensitive information in seconds.
+          </p>
 
           <div className="mb-4 w-full">
-            {/* Use label to trigger the hidden input; no manual click */}
             <label htmlFor="file-upload" className="block">
               <Input
                 id="file-upload"
@@ -73,11 +70,9 @@ export default function PdfRedactorPage() {
                   const f = e.target.files?.[0] ?? null;
                   setFile(f);
                   setFileLabel(f ? f.name : "Choose file (no file chosen)");
-                  // Allow picking the *same* file again:
-                  // e.currentTarget.value = "";
                 }}
               />
-              <div className="cursor-pointer text-center text-black w-full px-3 py-2 rounded border border-neutral-800 bg-white">
+              <div className="cursor-pointer text-center text-black w-full px-3 py-2 rounded border border-gray-300 bg-white hover:bg-rose-50 transition">
                 {fileLabel}
               </div>
             </label>
@@ -86,18 +81,18 @@ export default function PdfRedactorPage() {
           <button
             onClick={handleUpload}
             disabled={loading || !file}
-            className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 disabled:opacity-50"
+            className="text-white bg-gradient-to-r from-rose-400 via-rose-500 to-rose-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-rose-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 disabled:opacity-50 transition-all"
           >
             {loading ? "Processing..." : "Upload & Redact"}
           </button>
 
-          {error && <p className="text text-neutral-800 mt-4">{error}</p>}
+          {error && <p className="text-red-600 mt-4">{error}</p>}
 
           {downloadUrl && (
             <a
               href={downloadUrl}
               download
-              className="mt-6 inline-block bg-white font-semibold py-2 px-4 rounded hover:bg-red-50 transition text-neutral-800"
+              className="mt-6 inline-block bg-white font-semibold py-2 px-4 rounded hover:bg-rose-100 transition text-neutral-800 shadow hover:shadow-md"
             >
               Download Redacted PDF
             </a>

@@ -20,12 +20,12 @@ export default function SlideSection({
     [0, 0.5, 1],
     [direction === "left" ? -150 : 150, 0, direction === "left" ? -150 : 150]
   );
-  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);
+  const opacity = useTransform(scrollYProgress, [0, 0.4, 0.6, 1], [0, 1, 1, 0]);
 
   return (
     <motion.section
       ref={ref}
-      style={{ x, opacity }}
+      style={{ x, opacity, zIndex: 10 }}
       transition={{ type: "spring", stiffness: 60, damping: 20 }}
       className="w-full"
     >
