@@ -1,10 +1,11 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/ui/navbar";
 import { useState } from "react";
 
 export default function PdfRedactorPage() {
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState("Choose file (no file chosen)");
   const [downloadUrl, setDownloadUrl] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
@@ -13,6 +14,7 @@ export default function PdfRedactorPage() {
     if (!file) return;
     setLoading(true);
     setError("");
+    //console.log(file);
 
     try {
       const formData = new FormData();
@@ -50,12 +52,26 @@ export default function PdfRedactorPage() {
         <div className="bg-white/10 p-8 rounded-xl shadow-lg max-w-md w-full text-center">
           <h1 className="text-3xl font-bold mb-6 text-neutral-800">PDF Redactor</h1>
 
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="mb-4 text-black w-full px-3 py-2 rounded border border-neutral-800"
-          />
+<div className="mb-4 w-full">
+      <label className="block">
+        <Input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            setFile(file ? file.name : "Choose file (no file chosen)")
+          }}
+          className="hidden" // hide the raw input
+          id="file-upload"
+        />
+        <div
+          className="cursor-pointer text-center text-black w-full px-3 py-2 rounded border border-neutral-800 bg-white"
+          onClick={() => document.getElementById("file-upload")?.click()}
+        >
+          {file}
+        </div>
+      </label>
+    </div>
 
           <button
             onClick={handleUpload}
@@ -65,7 +81,7 @@ export default function PdfRedactorPage() {
             {loading ? "Processing..." : "Upload & Redact"}
           </button>
 
-          {error && <p className="text mt-4">{error}</p>}
+          {error && <p className="text text-neutral-800 mt-4">{error}</p>}
 
           {downloadUrl && (
             <a
