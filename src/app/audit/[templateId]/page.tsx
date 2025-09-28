@@ -29,12 +29,11 @@ import { getSpec, getTemplate } from "@/src/utils/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import React, { use, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
-type AuditValues = z.infer<typeof auditSchema>;
 export default function AuditPage({
   params,
 }: {
@@ -44,6 +43,11 @@ export default function AuditPage({
   const searchParams = useSearchParams();
   const router = useRouter();
   const specId = searchParams.get("spec");
+  const firstSpecId = searchParams.get("firstId");
+  const lastSpecId = searchParams.get("lastId");
+
+  const isOnFirst = specId === firstSpecId;
+  const isOnLast = specId === lastSpecId;
   const {
     data: template,
     isLoading,
@@ -62,6 +66,31 @@ export default function AuditPage({
     queryFn: () => getSpec(parseInt(specId!!)),
     enabled: !!specId,
   });
+
+  function handlePrevClicked() {
+    if (!specId) return;
+    const currentSpecId = parseInt(specId);
+    const newSpecId = currentSpecId - 1;
+
+    if (firstSpecId && newSpecId >= parseInt(firstSpecId)) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("spec", newSpecId.toString());
+      router.push(`/audit/${templateId}?${params.toString()}`);
+    }
+  }
+
+  function handleNextClicked() {
+    if (!specId) return;
+    const currentSpecId = parseInt(specId);
+    const newSpecId = currentSpecId + 1;
+
+    if (lastSpecId && newSpecId <= parseInt(lastSpecId)) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("spec", newSpecId.toString());
+      router.push(`/audit/${templateId}?${params.toString()}`);
+    }
+  }
+
   const [textProof, setTextProof] = useState("");
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
@@ -159,12 +188,18 @@ export default function AuditPage({
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
               />
-              <div>
+              <div className="flex justify-between pt-2">
+                <Button disabled={isOnFirst} onClick={handlePrevClicked}>
+                  <ChevronLeft />
+                </Button>
                 <Button
                   className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
                   onClick={() => auditMutation.mutate()}
                 >
                   Auto Audit
+                </Button>
+                <Button disabled={isOnLast} onClick={handleNextClicked}>
+                  <ChevronRight />
                 </Button>
               </div>
             </div>
