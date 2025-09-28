@@ -18,7 +18,12 @@ export const templateSchema = z.object({
     .min(1, { message: "At least one spec is required." }),
 });
 
-// export const auditSpecForma = z.object({
-//   context: z.string().optional(),
-//   proof:
-// });
+export const proofSchema = z.object({
+  type: z.enum(["text", "screenshot", "document"]),
+  content: z.string(),
+  file: z.instanceof(File).nullable(), // <-- allow null
+});
+export const auditSchema = z.object({
+  context: z.string().optional(),
+  proof: proofSchema,
+});
