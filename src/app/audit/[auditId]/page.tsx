@@ -107,6 +107,7 @@ export default function AuditPage({
       formData.append("spec", JSON.stringify(spec));
       formData.append("proofType", tab);
       formData.append("context", context ? context : "");
+      formData.append("auditId", auditId);
 
       if (tab === "text") {
         formData.append("proof", textProof);

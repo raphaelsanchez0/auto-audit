@@ -9,11 +9,11 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
-
   const spec = JSON.parse(formData.get("spec") as string) as Spec;
   const proofType = formData.get("proofType") as string;
   const context = formData.get("context") as string | null;
-  const proof = formData.get("proof"); // could be string or File
+  const proof = formData.get("proof");
+  const auditId = formData.get("auditId") as unknown as number;
 
   let proofContent = "";
   let fileUrl: string | null = null;
@@ -71,10 +71,10 @@ Respond ONLY with a JSON object like:
     // ✅ Save to DB and await
     const newAuditSpecEntity = await prisma.auditSpec.create({
       data: {
-        auditId: body.auditId,
-        specId: body.spec.id,
+        auditId: auditId,
+        specId: spec.id,
         evaluatedRating: data.score,
-        context: body.context,
+        context: context,
         feedback: data.feedback,
       },
     });
