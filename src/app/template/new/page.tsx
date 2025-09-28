@@ -25,9 +25,7 @@ import { Prisma, Template } from "@/src/generated/prisma";
 import { templateSchema } from "@/src/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { PrismaClient } from "@/src/generated/prisma";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/src/utils/prisma";
 
 export default function NewTemplateForm() {
   const form = useForm<z.infer<typeof templateSchema>>({

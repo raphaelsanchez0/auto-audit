@@ -1,4 +1,4 @@
-"'use client";
+"use client";
 import {
   Card,
   CardContent,
@@ -11,6 +11,8 @@ import { Separator } from "@/components/ui/separator";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { getTemplate } from "@/src/utils/api";
+import { useQuery } from "@tanstack/react-query";
 
 import React, { use } from "react";
 
@@ -20,6 +22,14 @@ export default function AuditPage({
   params: Promise<{ templateId: string }>;
 }) {
   const { templateId } = use(params);
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["templates", templateId],
+    queryFn: () => getTemplate(parseInt(templateId)),
+  });
+
+  console.log("data", data);
+
   return (
     <div className="w-full flex">
       <div className="bg-red-600 w-3/12">tst</div>

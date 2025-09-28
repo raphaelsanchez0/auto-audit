@@ -2,13 +2,13 @@ import { PrismaClient, Prisma } from "@/src/generated/prisma";
 import { templateSchema } from "@/src/schemas";
 import { NextResponse } from "next/server";
 
-const prisma = new PrismaClient();
+import { prisma } from "@/src/utils/prisma";
 export async function GET() {
   try {
     const templates = await prisma.template.findMany({
       include: {
         specs: true, // so we can count
-        _count: { select: { specs: true } },
+        _count: true,
       },
     });
 
