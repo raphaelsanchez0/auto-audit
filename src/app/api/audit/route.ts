@@ -1,37 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Spec } from "@/src/generated/prisma";
+import { prisma } from "@/src/utils/prisma";
 const dotenv = require("dotenv");
 const OpenAI = require("openai");
 
-dotenv.config({ path: "../../../../.env" }); 
+dotenv.config({ path: "../../../../.env" });
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-
 export async function POST(req: NextRequest) {
-    const formData = await req.formData();
+  const formData = await req.formData();
 
   const spec = JSON.parse(formData.get("spec") as string) as Spec;
   const proofType = formData.get("proofType") as string;
   const context = formData.get("context") as string | null;
   const proof = formData.get("proof"); // could be string or File
+  const auditId = formData.get("auditId");
 
-    let proofContent = "";
-    let fileUrl: string | null = null;
+  let proofContent = "";
+  let fileUrl: string | null = null;
 
-    if (proofType === "text") {
-      proofContent = formData.get("proof") as string;
-    } else {
-      const file = formData.get("proof") as File;
-      if (file) {
-        // TODO: database suff
-        fileUrl = `https://fake-storage/${file.name}`;
-        proofContent = `User uploaded a ${proofType} file: ${fileUrl}`;
-      }
+  if (proofType === "text") {
+    proofContent = formData.get("proof") as string;
+  } else {
+    const file = formData.get("proof") as File;
+    if (file) {
+      // TODO: database suff
+      fileUrl = `https://fake-storage/${file.name}`;
+      proofContent = `User uploaded a ${proofType} file: ${fileUrl}`;
     }
+  }
 
-    if (!spec || !proofType || (!proofContent && !fileUrl)) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
+  if (!spec || !proofType || (!proofContent && !fileUrl)) {
+    return NextResponse.json(
+      { error: "Missing required fields" },
+      { status: 400 }
+    );
+  }
 
   const prompt = `
 You are a compliance auditor. Rate how well the proof and context meet the specification.
@@ -55,7 +59,7 @@ Respond ONLY with a JSON object like:
       model: "gpt-5-nano",
       messages: [{ role: "user", content: prompt }],
     });
-    console.log(completion)
+    console.log(completion);
 
     const rawResponse = completion.choices[0].message?.content;
 
@@ -65,6 +69,26 @@ Respond ONLY with a JSON object like:
     } catch (err) {
       console.error("GPT JSON parse error:", rawResponse);
     }
+    const auditSpec = await prisma.auditSpec.upsert({
+      where: {
+        auditId_specId: {
+          auditId: Number(auditId),
+          specId: spec.id,
+        },
+      },
+      update: {
+        evaluatedRating: data.score,
+        feedback: data.feedback,
+        context: context || null,
+      },
+      create: {
+        auditId: Number(auditId),
+        specId: spec.id,
+        evaluatedRating: data.score,
+        feedback: data.feedback,
+        context: context || null,
+      },
+    });
 
     return NextResponse.json(data);
   } catch (err) {

@@ -51,19 +51,18 @@ model AuditSpec {
 
   evaluatedRating Int
   context         String?
-  proof           Proof?
   feedback        String?
 }
 
-model Proof {
-  id        Int       @id @default(autoincrement())
-  type      ProofType
-  fileUrl   String?
-  content   String?
+// model Proof {
+//   id        Int       @id @default(autoincrement())
+//   type      ProofType
+//   fileUrl   String?
+//   content   String?
 
-  auditSpec AuditSpec @relation(fields: [auditSpecId], references: [id])
-  auditSpecId Int @unique
-}
+//   auditSpec AuditSpec @relation(fields: [auditSpecId], references: [id])
+//   auditSpecId Int @unique
+// }
 
 // model SensitiveDocuments {
 //   id        Int       @id @default(autoincrement())
