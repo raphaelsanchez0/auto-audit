@@ -66,16 +66,19 @@ export default function AuditPage({
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [context, setContext] = useState("");
+  const [score, setScore] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<string>("");
 
-  const auditMutation = useMutation({
+    const auditMutation = useMutation({
     mutationFn: async () => {
+      console.log("SPEC",spec)
       if (!spec) throw new Error("Spec is missing");
 
       const payload = {
-        spec: spec, // or spec.name
-        proof: textProof,
-        context,
-        maxScore: spec.maxRating,
+        // send strings; your API route expects primitives
+        spec: spec,
+        proof: textProof,      // you could also include summary of files if needed
+        context: context,
       };
 
       const res = await fetch("/api/audit", {
@@ -83,16 +86,28 @@ export default function AuditPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        throw new Error("Failed to audit");
-      }
-
+      if (!res.ok) throw new Error(`Failed to audit (${res.status})`);
       return res.json();
     },
+     onSuccess: (data) => {
+    console.log("Backend response:", data); // 👈 print full response
+
+    setScore(typeof data.score === "number" ? data.score : null);
+    setFeedback(data.feedback ?? "");
+  },
+    onError: (err) => {
+      setScore(null);
+      setFeedback("Failed to audit. Please try again.");
+      console.error(err);
+    },
+    //onSuccess:
   });
 
+  //const isAuditing = auditMutation.isPending;
+
   console.log(documentFile);
+
+  
 
   return (
     <div className="w-full flex">
@@ -124,7 +139,9 @@ export default function AuditPage({
                     <TabsTrigger value="document">Document</TabsTrigger>
                   </TabsList>
                   <TabsContent value="text">
-                    <Textarea />
+                    <Textarea 
+                    value={textProof}
+                    onChange={(e)=>{setTextProof(e.target.value)}}/>
                   </TabsContent>
                   <TabsContent value="screenshot">
                     <input
@@ -174,6 +191,22 @@ export default function AuditPage({
           <CardHeader>
             <CardTitle className="text-xl">Feedback</CardTitle>
           </CardHeader>
+          <CardContent className="space-y-2">
+            {score !== null ? (
+              <>
+                <div className="text-lg font-semibold">
+                  Score: {score} / {spec?.maxRating ?? "?"}
+                </div>
+                <div className="text-muted-foreground">
+                  {feedback || "No feedback provided."}
+                </div>
+              </>
+            ) : (
+              <div className="text-muted-foreground">
+                Run <em>Auto Audit</em> to see a score and feedback.
+              </div>
+            )}
+          </CardContent>
         </Card>
       </div>
     </div>
