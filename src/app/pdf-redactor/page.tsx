@@ -41,7 +41,7 @@ export default function PdfRedactorPage() {
   };
 
   return (
-      <div className="min-h-screen flex flex-col bg-neutral-100 text-white">
+      <div className="h-screen w-screen min-h-screen flex flex-col bg-neutral-100 text-white overflow-hidden">
         <div className="page">
         <Navbar />
           <main className="p-6 pb-20 ">
