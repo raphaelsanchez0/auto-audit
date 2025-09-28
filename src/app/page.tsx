@@ -40,31 +40,6 @@ export default function Home() {
               Start
             </Button>
           </Link>
-
-          {/* New Button for PDF Redactor */}
-          <Link href="/pdf-redactor">
-            <Button
-              className="
-                bg-white-600 
-                text-white 
-                font-semibold 
-                px-6 
-                py-3 
-                rounded-lg 
-                shadow-md 
-                border-2 
-                border-grey-700 
-                transition duration-300 ease-in-out
-                hover:bg-neutral-100 
-                hover:border-neutral-100 
-                hover:shadow-lg 
-                hover:scale-110
-                hover:text-red-400 
-              "
-            >
-              PDF Redactor
-            </Button>
-          </Link>
         </div>
       </div>
     </main>

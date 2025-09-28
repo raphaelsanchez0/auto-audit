@@ -13,6 +13,7 @@ import { TemplateWithSpecCount } from "@/src/types";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import React from "react";
+import { Navbar } from "@/components/ui/navbar";
 
 export default function TemplatePage() {
   const {
@@ -30,6 +31,12 @@ export default function TemplatePage() {
 
   return (
     <div className="page">
+      <>
+      <Navbar />
+      <main className="p-6">
+        <h2 className="text-2xl font-semibold"></h2>
+      </main>
+    </>
       <Card>
         <CardHeader>
           <CardTitle className="text-4xl font-bold tracking-tight text-center">
