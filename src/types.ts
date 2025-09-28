@@ -1,5 +1,5 @@
 import { number } from "zod";
-import { Template, Spec } from "./generated/prisma";
+import { Template, Spec, Audit, AuditSpec } from "./generated/prisma";
 
 export interface TemplateWithSpecCount extends Template {
   specCount: number;
@@ -14,12 +14,15 @@ export interface TemplateWithSpecs extends Template {
 //   description: string;
 //   maxRating: number;
 // }
-
-export interface Audit extends Spec {
-  evaluatedRating: number;
-  context?: string;
-  proof: Proof;
+export interface AuditEntityComplete extends Audit {
+  template: TemplateWithSpecs;
+  auditSpecs: AuditSpec[];
 }
+// export interface Audit extends Spec {
+//   evaluatedRating: number;
+//   context?: string;
+//   proof: Proof;
+// }
 
 export type Proof =
   | { type: "pdf"; file: File }

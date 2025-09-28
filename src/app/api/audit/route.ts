@@ -1,37 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Spec } from "@/src/generated/prisma";
+import { prisma } from "@/src/utils/prisma";
 const dotenv = require("dotenv");
 const OpenAI = require("openai");
 
-dotenv.config({ path: "../../../../.env" }); 
+dotenv.config({ path: "../../../../.env" });
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-
 export async function POST(req: NextRequest) {
-    const formData = await req.formData();
-
+  const formData = await req.formData();
   const spec = JSON.parse(formData.get("spec") as string) as Spec;
   const proofType = formData.get("proofType") as string;
   const context = formData.get("context") as string | null;
-  const proof = formData.get("proof"); // could be string or File
+  const proof = formData.get("proof");
+  const auditId = formData.get("auditId") as unknown as number;
 
-    let proofContent = "";
-    let fileUrl: string | null = null;
+  let proofContent = "";
+  let fileUrl: string | null = null;
 
-    if (proofType === "text") {
-      proofContent = formData.get("proof") as string;
-    } else {
-      const file = formData.get("proof") as File;
-      if (file) {
-        // TODO: database suff
-        fileUrl = `https://fake-storage/${file.name}`;
-        proofContent = `User uploaded a ${proofType} file: ${fileUrl}`;
-      }
+  if (proofType === "text") {
+    proofContent = formData.get("proof") as string;
+  } else {
+    const file = formData.get("proof") as File;
+    if (file) {
+      // TODO: database suff
+      fileUrl = `https://fake-storage/${file.name}`;
+      proofContent = `User uploaded a ${proofType} file: ${fileUrl}`;
     }
+  }
 
-    if (!spec || !proofType || (!proofContent && !fileUrl)) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
+  if (!spec || !proofType || (!proofContent && !fileUrl)) {
+    return NextResponse.json(
+      { error: "Missing required fields" },
+      { status: 400 }
+    );
+  }
 
   const prompt = `
 You are a compliance auditor. Rate how well the proof and context meet the specification.
@@ -53,18 +56,31 @@ Respond ONLY with a JSON object like:
       model: "gpt-5-nano",
       messages: [{ role: "user", content: prompt }],
     });
-    console.log(completion)
 
     const rawResponse = completion.choices[0].message?.content;
 
     let data = { score: -1, feedback: "Could not parse response" };
     try {
-      data = JSON.parse(rawResponse!);
+      if (rawResponse) {
+        data = JSON.parse(rawResponse);
+      }
     } catch (err) {
       console.error("GPT JSON parse error:", rawResponse);
     }
 
-    return NextResponse.json(data);
+    // ✅ Save to DB and await
+    const newAuditSpecEntity = await prisma.auditSpec.create({
+      data: {
+        auditId: auditId,
+        specId: spec.id,
+        evaluatedRating: data.score,
+        context: context,
+        feedback: data.feedback,
+      },
+    });
+
+    // ✅ Return the DB entity (contains id, auditId, specId, etc.)
+    return NextResponse.json(newAuditSpecEntity);
   } catch (err) {
     console.error("OpenAI API error:", err);
     return NextResponse.json({ error: "OpenAI API error" }, { status: 500 });

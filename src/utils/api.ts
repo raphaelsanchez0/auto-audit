@@ -9,7 +9,15 @@ export async function getTemplate(id: number) {
 export async function getSpec(id: number) {
   const res = await fetch(`/api/spec/${id}`);
   if (!res.ok) {
-    throw new Error("Failed to fetch template");
+    throw new Error("Failed to fetch spec");
+  }
+  return res.json();
+}
+
+export async function getAudit(id: number) {
+  const res = await fetch(`/api/audit/${id}`);
+  if (!res.ok) {
+    throw new Error("Failed to fetch audit");
   }
   return res.json();
 }
