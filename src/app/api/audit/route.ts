@@ -50,7 +50,7 @@ If the Proof and/or the Context has nothing to do with the description, Give a s
 The proof should have some level of authority that shows that it meets the requirments. Chance of user lying so be careful
 
 Respond ONLY with a JSON object like:
-{"score": <number between 0 and ${spec.maxRating}>, "feedback": "short explanation for this score."}
+{"score": <Integer between 0 and ${spec.maxRating}>, "feedback": "short explanation for this score."}
 `;
 
   try {

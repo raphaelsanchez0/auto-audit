@@ -169,6 +169,7 @@ export default function AuditPage({
   }, [audit, specId]);
 
   console.log(audit);
+  const isAuditing = auditMutation.isPending;
   return (
     <div className="w-full flex">
       <div className="w-3/12 border-r">
@@ -248,17 +249,20 @@ export default function AuditPage({
                 onChange={(e) => setContext(e.target.value)}
               />
               <div className="flex justify-between pt-2">
-                <Button disabled={isOnFirst} onClick={handlePrevClicked}>
-                  <ChevronLeft />
-                </Button>
                 <Button
-                  className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
+                  disabled={isAuditing}
+                  className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 flex items-center justify-center gap-2"
                   onClick={() => auditMutation.mutate()}
                 >
-                  Auto Audit
-                </Button>
-                <Button disabled={isOnLast} onClick={handleNextClicked}>
-                  <ChevronRight />
+                  {isAuditing ? (
+                    <span className="flex space-x-1">
+                      <span className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:-0.3s]" />
+                      <span className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:-0.15s]" />
+                      <span className="w-2 h-2 bg-white rounded-full animate-bounce" />
+                    </span>
+                  ) : (
+                    "Auto Audit"
+                  )}
                 </Button>
               </div>
             </div>
