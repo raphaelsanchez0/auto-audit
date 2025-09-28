@@ -30,7 +30,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import React, { use, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
@@ -99,58 +99,61 @@ export default function AuditPage({
   const [score, setScore] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<string>("");
 
-    const auditMutation = useMutation({
-  mutationFn: async () => {
-    const formData = new FormData();
-    formData.append("spec", JSON.stringify(spec));
-    formData.append("proofType", tab);
-    formData.append("context", context? context : "");
+  const auditMutation = useMutation({
+    mutationFn: async () => {
+      const formData = new FormData();
+      formData.append("spec", JSON.stringify(spec));
+      formData.append("proofType", tab);
+      formData.append("context", context ? context : "");
 
-    if (tab === "text") {
-      formData.append("proof", textProof);
-    } else if (tab === "screenshot" && screenshotFile) {
-      formData.append("proof", screenshotFile);
-    } else if (tab === "document" && documentFile) {
-      formData.append("proof", documentFile);
-    }
+      if (tab === "text") {
+        formData.append("proof", textProof);
+      } else if (tab === "screenshot" && screenshotFile) {
+        formData.append("proof", screenshotFile);
+      } else if (tab === "document" && documentFile) {
+        formData.append("proof", documentFile);
+      }
 
-    const res = await fetch("/api/audit", {
-      method: "POST",
-      body: formData,
-    });
+      const res = await fetch("/api/audit", {
+        method: "POST",
+        body: formData,
+      });
 
-    let data: any = null;
-    try {
-      data = await res.json(); // try parse json regardless
-    } catch (e) {
-      throw new Error(`Audit failed: ${res.status} (Invalid JSON)`);
-    }
+      let data: any = null;
+      try {
+        data = await res.json(); // try parse json regardless
+      } catch (e) {
+        throw new Error(`Audit failed: ${res.status} (Invalid JSON)`);
+      }
 
-    if (!res.ok) {
-      throw new Error(
-        `Audit failed: ${res.status} - ${data?.error || "Unknown error"}`
-      );
-    }
+      if (!res.ok) {
+        throw new Error(
+          `Audit failed: ${res.status} - ${data?.error || "Unknown error"}`
+        );
+      }
 
-    return data; // 👈 mutation result
-  },
-  onSuccess: (data) => {
-    console.log("Backend response:", data);
-    setScore(typeof data.score === "number" ? data.score : null);
-    setFeedback(data.feedback ?? "");
-  },
-  onError: (err) => {
-    setScore(null);
-    setFeedback("Failed to audit. Please try again.");
-    console.error(err);
-  },
-});
+      return data; // 👈 mutation result
+    },
+    onSuccess: (data) => {
+      console.log("Backend response:", data);
+      setScore(typeof data.score === "number" ? data.score : null);
+      setFeedback(data.feedback ?? "");
+    },
+    onError: (err) => {
+      setScore(null);
+      setFeedback("Failed to audit. Please try again.");
+      console.error(err);
+    },
+  });
 
   //const isAuditing = auditMutation.isPending;
 
   console.log(documentFile);
 
-  
+  useEffect(() => {
+    setFeedback("");
+    setScore(null);
+  }, [specId]);
 
   return (
     <div className="w-full flex">
@@ -175,16 +178,24 @@ export default function AuditPage({
               <CardTitle className="">Proof of Compliance</CardTitle>
               <CardDescription></CardDescription>
               <div className="flex w-full flex-col gap-6">
-                <Tabs value={tab} onValueChange={(val) => setTab(val)} defaultValue="text" className="w-full">
+                <Tabs
+                  value={tab}
+                  onValueChange={(val) => setTab(val)}
+                  defaultValue="text"
+                  className="w-full"
+                >
                   <TabsList>
                     <TabsTrigger value="text">Text</TabsTrigger>
                     <TabsTrigger value="screenshot">Screenshot</TabsTrigger>
                     <TabsTrigger value="document">Document</TabsTrigger>
                   </TabsList>
                   <TabsContent value="text">
-                    <Textarea 
-                    value={textProof}
-                    onChange={(e)=>{setTextProof(e.target.value)}}/>
+                    <Textarea
+                      value={textProof}
+                      onChange={(e) => {
+                        setTextProof(e.target.value);
+                      }}
+                    />
                   </TabsContent>
                   <TabsContent value="screenshot">
                     <input
@@ -236,27 +247,21 @@ export default function AuditPage({
             </div>
           </CardContent>
         </Card>
-        <Card className="m-4">
-          <CardHeader>
-            <CardTitle className="text-xl">Feedback</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {score !== null ? (
-              <>
-                <div className="text-lg font-semibold">
-                  Score: {score} / {spec?.maxRating ?? "?"}
-                </div>
-                <div className="text-muted-foreground">
-                  {feedback || "No feedback provided."}
-                </div>
-              </>
-            ) : (
-              <div className="text-muted-foreground">
-                Run <em>Auto Audit</em> to see a score and feedback.
+        {score !== null && (
+          <Card className="m-4">
+            <CardHeader>
+              <CardTitle className="text-xl">Feedback</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="text-lg font-semibold">
+                Score: {score} / {spec?.maxRating ?? "?"}
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <div className="text-muted-foreground">
+                {feedback || "No feedback provided."}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
